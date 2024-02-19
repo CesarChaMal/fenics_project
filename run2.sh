@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Function to check if a directory exists in Docker and copy it
-copy_if_exists() {
+copy_directory_if_exists() {
     local docker_container=$1
     local docker_dir=$2
     local local_dir=$3
@@ -16,6 +16,24 @@ copy_if_exists() {
         docker cp "$docker_container:$found_dir/." "$local_dir/"
     else
         echo "Directory '$docker_dir' not found in Docker container '$docker_container'."
+    fi
+}
+
+# Function to check if a file exists in Docker and copy it
+copy_file_if_exists() {
+    local docker_container=$1
+    local search_pattern=$2
+    local local_dir=$3
+
+    # Find the file dynamically
+    local found_file=$(docker exec "$docker_container" bash -c "find / -type f -name '$search_pattern' 2>/dev/null | head -n 1")
+
+    # Check if the file was found
+    if [ -n "$found_file" ]; then
+        echo "Found '$search_pattern' at '$found_file'. Copying to '$local_dir'..."
+        docker cp "$docker_container:$found_file" "$local_dir"
+    else
+        echo "File '$search_pattern' not found in Docker container '$docker_container'."
     fi
 }
 
@@ -96,13 +114,15 @@ mkdir -p "$CONDA_PATH/share/dolfin/cmake"
 #docker cp "fenics_1.6.0:${DOLFIN_DIR}/." "$CONDA_PATH/share/dolfin/cmake/"
 
 # UFC directory
-copy_if_exists "$DOCKER_CONTAINER" "ufc-config.cmake" "$CONDA_PATH/share/ufc"
+copy_directory_if_exists "$DOCKER_CONTAINER" "ufc-config.cmake" "$CONDA_PATH/share/ufc"
 
 # PETSc directory
-copy_if_exists "$DOCKER_CONTAINER" "petscvariables" "$CONDA_PATH/share/petsc"
+copy_directory_if_exists "$DOCKER_CONTAINER" "petscvariables" "$CONDA_PATH/share/petsc"
 
 # DOLFIN directory
-copy_if_exists "$DOCKER_CONTAINER" "DOLFINConfig.cmake" "$CONDA_PATH/share/dolfin/cmake"
+copy_directory_if_exists "$DOCKER_CONTAINER" "DOLFINConfig.cmake" "$CONDA_PATH/share/dolfin/cmake"
+
+copy_file_if_exists "$DOCKER_CONTAINER" "_sysconfigdata_nd.py" "$CONDA_PATH/lib/python2.7"
 
 # Optionally, identify and set the PETSC_ARCH variable based on the Docker environment
 # This step may require specific logic based on your setup and how PETSC_ARCH should be determined
@@ -126,7 +146,9 @@ done
 # Proceed with your script if all directories are validated
 echo "All required directories have been validated. Proceeding..."
 
-conda install libpython
+#conda install libpython
+
+$CONDA_PYTHON_PATH -c "import _sysconfigdata_nd"
 
 # Execute Python script within the Conda environment
 $CONDA_PYTHON_PATH -c "from fenics import *; import dolfin; print(dolfin.__version__)"
