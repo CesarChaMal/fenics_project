@@ -11,7 +11,7 @@ function display_compile_logs() {
     echo "----------------"
 }
 
-PROJECT_PATH="/c/IdeaProjects/fenics_project"
+PROJECT_PATH=$(pwd)
 cd $PROJECT_PATH
 
 docker pull quay.io/fenicsproject/stable:1.6.0
