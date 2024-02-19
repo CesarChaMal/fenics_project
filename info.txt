@@ -1,0 +1,381 @@
+Method 1 Docker
+
+# change the directory to the place of your project
+cd C:\IdeaProjects\fenics_project>
+
+docker ps -a
+docker images
+
+docker image list | grep fenics | awk '{print $3}'
+
+# to delete the image
+docker rmi $(docker image list | grep fenics | awk '{print $3}')
+
+docker ps -a |  grep fenics | awk '{print $1}'
+
+# to stop and delete the container
+docker stop $(docker ps -a | grep fenics | awk '{print $1}') && docker rm -f $(docker ps -a |  grep fenics | awk '{print $1}')
+
+# pull the image
+docker pull quay.io/fenicsproject/stable:1.6.0
+
+
+-- Interactive mode
+
+# cmd
+docker run -ti --name fenics_1.6.0 -v %cd%:/home/fenics/project quay.io/fenicsproject/stable:1.6.0
+
+# powershell
+docker run -ti --name fenics_1.6.0 -v "${PWD}:/home/fenics/project" quay.io/fenicsproject/stable:1.6.0
+
+
+# gitbash
+winpty docker run -ti --name fenics_1.6.0 -v $(pwd):/home/fenics/project quay.io/fenicsproject/stable:1.6.0
+
+# ubuntu linux
+docker run -ti --name fenics_1.6.0 -v $(pwd):/home/fenics/project quay.io/fenicsproject/stable:1.6.0
+
+
+# then in the interactive mode inside the container shell run
+
+# checking the version
+python
+from fenics import *; import dolfin; print(dolfin.__version__); exit();
+
+# running demo from the container
+cd ~/demo/documented/poisson/python/
+python demo_poisson.py
+
+# running demo from the container in the mounted path
+cd /home/fenics/project
+python solve_poisson.py
+
+# to start the container once you had ran docker run
+docker start -ai fenics_1.6.0
+
+
+-- Non Interactive mode
+#works but does not show me output
+
+# with docker run
+docker run --rm quay.io/fenicsproject/stable:1.6.0 /bin/echo "Hello from Docker"
+docker run --rm quay.io/fenicsproject/stable:1.6.0 /bin/sh echo "Hello from Docker"
+docker run --rm quay.io/fenicsproject/stable:1.6.0 /bin/sh -c "ls -ltra"
+docker run --rm quay.io/fenicsproject/stable:1.6.0 bash -c "ls -ltra"
+
+docker run --rm quay.io/fenicsproject/stable:1.6.0 python -c "import dolfin; print(dolfin.__version__)"
+docker run --rm -v $(pwd):/home/fenics/project quay.io/fenicsproject/stable:1.6.0 python ~/demo/documented/poisson/python/demo_poisson.py
+docker run --rm -v $(pwd):/home/fenics/project quay.io/fenicsproject/stable:1.6.0 python /home/fenics/demo/documented/poisson/python/demo_poisson.py
+docker run --rm quay.io/fenicsproject/stable:1.6.0 python /home/fenics/demo/documented/poisson/python/demo_poisson.py
+
+docker run --rm --name fenics_1.6.0 -v $(pwd):/home/fenics/project quay.io/fenicsproject/stable:1.6.0 /bin/bash -c "ls /home/fenics/project"
+docker run --rm --name fenics_1.6.0 -v $(pwd):/home/fenics/project quay.io/fenicsproject/stable:1.6.0 python /home/fenics/project/solve_poisson.py
+docker run --rm --name fenics_1.6.0 -v /c/IdeaProjects/fenics_project:/home/fenics/project quay.io/fenicsproject/stable:1.6.0 python /home/fenics/project/solve_poisson.py
+
+# windows
+docker run --rm --name fenics_1.6.0 -v /$(pwd):/home/fenics/project quay.io/fenicsproject/stable:1.6.0 /bin/bash -c "ls /home/fenics/project"
+
+#for gitbash
+MSYS_NO_PATHCONV=1 docker run --rm --name fenics_1.6.0 -v "$(pwd)":/home/fenics/project quay.io/fenicsproject/stable:1.6.0 /bin/bash -c "ls /home/fenics/project"
+MSYS_NO_PATHCONV=1 docker run --rm --name fenics_1.6.0 -v "$(pwd)":/home/fenics/project quay.io/fenicsproject/stable:1.6.0 python /home/fenics/project/solve_poisson.py
+
+
+-- Interactive mode with exec
+PROJECT_PATH="/c/IdeaProjects/fenics_project"
+cd $PROJECT_PATH
+docker run -d -ti --name fenics_1.6.0 -v $PROJECT_PATH:/home/fenics/project quay.io/fenicsproject/stable:1.6.0
+
+-- Interactive mode with exec
+docker exec fenics_1.6.0 bash
+
+-- Non Interactive mode with exec
+docker exec fenics_1.6.0 find / -name libdolfin.so.1.6 2>/dev/null
+
+
+docker exec fenics_1.6.0 find / -name UFCConfig.cmake 2>/dev/null
+docker exec fenics_1.6.0 find / -name ufc-config.cmake 2>/dev/null
+docker exec fenics_1.6.0 find /usr/local/lib -name '*ufc*' 2>/dev/null
+docker exec fenics_1.6.0 find /usr/lib -name '*ufc*' 2>/dev/null
+docker exec fenics_1.6.0 find /opt -name '*ufc*' 2>/dev/null
+docker exec fenics_1.6.0 printenv | grep -i ufc
+docker exec fenics_1.6.0 dpkg -L libufc 
+docker exec fenics_1.6.0 g++ --version
+docker exec fenics_1.6.0 clang++ --version
+docker exec fenics_1.6.0 cmake --version
+docker exec fenics_1.6.0 find /usr/include/ -name Python.h
+docker exec fenics_1.6.0 echo $PETSC_DIR
+docker exec fenics_1.6.0 find / -name libpetsc* 2>/dev/null
+docker exec fenics_1.6.0 find / -name 'DOLFINConfig.cmake' 2>/dev/null
+
+
+LD_LIB_PATH="/home/fenics/build/lib"
+FENICS_PYTHON_PKG_DIR="/home/fenics/build/lib/python2.7/site-packages"
+UFC_DIR="/home/fenics/build/share/ufc"
+PETSC_DIR="/usr/local/lib/petsc"
+PETSC_ARCH="linux-gnu-c-opt"
+DOLFIN_DIR="/home/fenics/build/share/dolfin/cmake"
+
+# Set and export all necessary environment variables before executing Python scripts
+ENV_VARS="export LD_LIBRARY_PATH=${LD_LIB_PATH}:\$LD_LIBRARY_PATH && \
+          export PYTHONPATH=${FENICS_PYTHON_PKG_DIR}:\$PYTHONPATH && \
+          export CMAKE_PREFIX_PATH=${UFC_DIR}:\$CMAKE_PREFIX_PATH && \
+          export PETSC_DIR=${PETSC_DIR} && \
+          export PETSC_ARCH=${PETSC_ARCH} && \
+          export DOLFIN_DIR=${DOLFIN_DIR}"
+
+docker exec fenics_1.6.0 bash -c "$ENV_VARS && python -c 'from fenics import *; import dolfin; print(dolfin.__version__)'"
+
+docker exec fenics_1.6.0 bash -c "$ENV_VARS && cd /home/fenics/demo/documented/poisson/python/ && python demo_poisson.py"
+
+docker exec fenics_1.6.0 bash -c "$ENV_VARS && cd /home/fenics/project && python solve_poisson.py"
+
+
+Note --
+
+# if you have this error
+
+PS C:\Users\Ces_C> docker run -ti --name fenics_1.6.0 -v "${PWD}:/home/fenics/project" quay.io/fenicsproject/stable:1.6.0
+docker: Error response from daemon: Conflict. The container name "/fenics_1.6.0" is already in use by container "a8b357d5bcd7fd6b75472f335c91756527d676c919b3b689400b801d0ac8b09d". You have to remove (or rename) that container to be able to reuse that name.
+
+#you can either stop and delete and then docker run again
+docker stop $(docker ps -a | grep fenics | awk '{print $1}') && docker rm -f $(docker ps -a |  grep fenics | awk '{print $1}')
+
+docker run -ti --name fenics_1.6.0 -v "${PWD}:/home/fenics/project" quay.io/fenicsproject/stable:1.6.0
+
+# or docker start
+docker start -ai fenics_1.6.0
+
+
+
+
+Method 2 Copy libraries from docker and create conda env
+
+
+# Create env
+conda create --name fenics1.6 python=2.7  --yes
+
+# Acivate env
+conda activate fenics1.6
+
+# look for the files
+docker start -ai fenics_1.6.0
+
+find / -name "*dolfin*"
+python -c "import dolfin; print(dolfin.__version__)"
+python -c "import dolfin; print(dolfin.__path__)"
+python -c "import dolfin; print(dolfin.__file__)"
+
+find / -name "*numpy*"
+python -c "import numpy; print(numpy.__version__)"
+python -c "import numpy; print(numpy.__path__)"
+
+find / -name "*ufl*"
+python -c "import ufl; print(ufl.__version__)"
+python -c "import ufl; print(ufl.__path__)"
+
+find / -name "*ply.lex*"
+python -c "import ply.lex; print(ply.lex.__version__)"
+python -c "import ply.lex; print(ply.lex.__path__)"
+python -c "import ply.lex; print(ply.lex.__file__)"
+
+
+
+# gitbash
+HOME="/c/Users/Ces_C"
+CONDA_PATH="$HOME/.conda/envs/fenics1.6"
+CONDA_PYTHON_PATH="$HOME/.conda/envs/fenics1.6/python.exe"
+export PYTHONPATH="${PYTHONPATH}:${CONDA_PATH}/Lib/site-packages"
+
+# Copy libraries
+
+docker ps -a
+docker ps -a | grep fenics 
+docker ps -a | grep fenics | awk '{print $1}'
+
+# one way to do it
+docker cp $(docker ps -a | grep fenics | awk '{print $1}'):/home/fenics/build/lib/python2.7/site-packages/ /c/IdeaProjects/fenics_project
+docker cp $(docker ps -a | grep fenics | awk '{print $1}'):/home/fenics/build/lib/python2.7/site-packages/ $(pwd)
+
+docker cp $(docker ps -a | grep fenics | awk '{print $1}'):/home/fenics/build/lib/python2.7/site-packages/ /c/Users/Ces_C/.conda/envs/fenics1.6/Lib/site-packages
+docker cp $(docker ps -a | grep fenics | awk '{print $1}'):/usr/lib/python2.7/dist-packages/numpy/ /c/Users/Ces_C/.conda/envs/fenics1.6/Lib/site-packages/numpy
+
+# run these 2
+docker cp $(docker ps -a | grep fenics | awk '{print $1}'):/home/fenics/build/lib/python2.7/site-packages/ "$CONDA_PATH/Lib/site-packages"
+docker cp $(docker ps -a | grep fenics | awk '{print $1}'):/usr/lib/python2.7/dist-packages/numpy/ "$CONDA_PATH/Lib/site-packages/numpy"
+
+# second way to do it
+docker cp fenics_1.6.0:/home/fenics/build/lib/python2.7/site-packages/ /c/IdeaProjects/fenics_project
+docker cp fenics_1.6.0:/home/fenics/build/lib/python2.7/site-packages/ $(pwd)
+
+docker cp fenics_1.6.0:/home/fenics/build/lib/python2.7/site-packages/ /c/Users/Ces_C/.conda/envs/fenics1.6/Lib/site-packages/
+docker cp fenics_1.6.0:/usr/lib/python2.7/dist-packages/numpy/ /c/Users/Ces_C/.conda/envs/fenics1.6/Lib/site-packages/numpy
+
+# run these 2
+docker cp fenics_1.6.0:/home/fenics/build/lib/python2.7/site-packages/ "${CONDA_PATH}/Lib/site-packages"
+docker cp fenics_1.6.0:/usr/lib/python2.7/dist-packages/numpy/ "${CONDA_PATH}/Lib/site-packages/numpy"
+
+
+ls -ltra "${CONDA_PATH}/lib/site-packages"
+ls -ltra "${CONDA_PATH}/lib/site-packages/dolfin"
+ls -ltra "${CONDA_PATH}/lib/site-packages/numpy"
+ls -ltra "${CONDA_PATH}/lib/site-packages/numpy/core"
+
+rm -rf "${CONDA_PATH}/lib/site-packages"
+
+
+# ubuntu
+CONDA_PATH="$HOME/anaconda3/envs/fenics1.6"
+CONDA_PYTHON_PATH="$HOME/anaconda3/envs/fenics1.6/bin/python"
+export PYTHONPATH="${PYTHONPATH}:${CONDA_PATH}/lib/site-packages"
+export LD_LIBRARY_PATH="${CONDA_PATH}/lib:$LD_LIBRARY_PATH"
+
+
+# Copy libraries
+
+docker ps -a
+docker ps -a | grep fenics 
+docker ps -a | grep fenics | awk '{print $1}'
+
+# one way to do it
+docker cp $(docker ps -a | grep fenics | awk '{print $1}'):/home/fenics/build/lib/python2.7/site-packages/ /c/IdeaProjects/fenics_project
+docker cp $(docker ps -a | grep fenics | awk '{print $1}'):/home/fenics/build/lib/python2.7/site-packages/ $(pwd)
+
+docker cp $(docker ps -a | grep fenics | awk '{print $1}'):/home/fenics/build/lib/python2.7/site-packages/ /root/anaconda3/envs/fenics1.6/lib/site-packages
+docker cp $(docker ps -a | grep fenics | awk '{print $1}'):/usr/lib/python2.7/dist-packages/numpy/ /root/anaconda3/envs/fenics1.6/lib/site-packages/numpy
+
+docker cp $(docker ps -a | grep fenics | awk '{print $1}'):/home/fenics/build/lib/python2.7/site-packages/ "$CONDA_PATH/lib/site-packages/"
+docker cp $(docker ps -a | grep fenics | awk '{print $1}'):/usr/lib/python2.7/dist-packages/numpy/ "$CONDA_PATH/lib/site-packages/numpy"
+
+# run these 
+docker cp $(docker ps -a | grep fenics | awk '{print $1}'):/home/fenics/build/lib/python2.7/site-packages/ /tmp/fenics-packages
+
+# Move the contents to your Conda environment's site-packages directory
+mkdir -p "$CONDA_PATH/lib/site-packages/"
+mv /tmp/fenics-packages/* "$CONDA_PATH/lib/site-packages/"
+rsync -av /tmp/fenics-packages/ "$CONDA_PATH/lib/site-packages/"
+
+# Remove the temporary directory
+rm -rf /tmp/fenics-packages
+
+# Move the contents to your Conda environment's site-packages directory
+mkdir -p /tmp/fenics-packages/numpy
+docker cp $(docker ps -a | grep fenics | awk '{print $1}'):/usr/lib/python2.7/dist-packages/numpy/ /tmp/fenics-packages/numpy
+mkdir -p "$CONDA_PATH/lib/site-packages/numpy"
+rsync -av /tmp/fenics-packages/ "$CONDA_PATH/lib/site-packages/numpy"
+
+# Remove the temporary directory
+rm -rf /tmp/fenics-packages
+
+# second way to do it
+docker cp fenics_1.6.0:/home/fenics/build/lib/python2.7/site-packages/ /c/IdeaProjects/fenics_project
+docker cp fenics_1.6.0:/home/fenics/build/lib/python2.7/site-packages/ $(pwd)
+
+docker cp fenics_1.6.0:/home/fenics/build/lib/python2.7/site-packages/ /root/anaconda3/envs/fenics1.6/lib/site-packages
+docker cp fenics_1.6.0:/usr/lib/python2.7/dist-packages/numpy/ /root/anaconda3/envs/fenics1.6/lib/site-packages/numpy
+
+docker cp fenics_1.6.0:/home/fenics/build/lib/python2.7/site-packages/ "$CONDA_PATH/lib/site-packages"
+docker cp fenics_1.6.0:/usr/lib/python2.7/dist-packages/numpy/ "$CONDA_PATH/lib/site-packages/numpy"
+
+# run these 
+docker cp fenics_1.6.0:/home/fenics/build/lib/python2.7/site-packages/ /tmp/fenics-packages
+
+# Move the contents to your Conda environment's site-packages directory
+mkdir -p "$CONDA_PATH/lib/site-packages/"
+mv /tmp/fenics-packages/* "$CONDA_PATH/lib/site-packages/"
+
+# Remove the temporary directory
+rm -rf /tmp/fenics-packages
+
+# Move the contents to your Conda environment's site-packages directory
+mkdir -p /tmp/fenics-packages/numpy
+docker cp fenics_1.6.0:/usr/lib/python2.7/dist-packages/numpy/ /tmp/fenics-packages/numpy
+rsync -av /tmp/fenics-packages/ "$CONDA_PATH/lib/site-packages/numpy"
+
+# Remove the temporary directory
+rm -rf /tmp/fenics-packages
+
+docker cp fenics_1.6.0:/home/fenics/build/lib/python2.7/site-packages/ $PROJECT_PATH
+docker cp fenics_1.6.0:/usr/lib/python2.7 $CONDA_PATH/lib/python2.7
+docker cp fenics_1.6.0:/usr/local/lib/python2.7 $CONDA_PATH/local/lib/python2.7
+
+
+ls -ltra "${CONDA_PATH}/lib/site-packages"
+ls -ltra "${CONDA_PATH}/lib/site-packages/dolfin"
+ls -ltra "${CONDA_PATH}/lib/site-packages/numpy"
+ls -ltra "${CONDA_PATH}/lib/site-packages/numpy/core"
+
+chmod -R +rX "${CONDA_PATH}/lib/site-packages/numpy"
+ldd "${CONDA_PATH}/lib/site-packages/numpy/core/multiarray.x86_64-linux-gnu.so"
+
+readelf -h "${CONDA_PATH}/lib/site-packages/numpy/core/multiarray.x86_64-linux-gnu.so" | grep Machine
+objdump -p "${CONDA_PATH}/lib/site-packages/numpy/core/multiarray.x86_64-linux-gnu.so" | grep NEEDED
+
+readelf -d /usr/lib/python2.7/dist-packages/numpy/core/multiarray.x86_64-linux-gnu.so | grep Machine
+objdump -p /usr/lib/python2.7/dist-packages/numpy/core/multiarray.x86_64-linux-gnu.so | grep NEEDED
+
+sudo apt-get update
+sudo apt-get install libblas3
+sudo apt-get --reinstall install libc6
+
+rm -rf "${CONDA_PATH}/lib/site-packages"
+
+conda install --name fenics1.6 pip --force-reinstall
+
+"$CONDA_PYTHON_PATH" -c "import dolfin; print(dolfin.__version__)"
+"$CONDA_PYTHON_PATH" -c "import numpy; print(numpy.__version__)"
+"$CONDA_PYTHON_PATH" solve_poisson.py
+"$CONDA_PYTHON_PATH" -m pip --version	
+"$CONDA_PYTHON_PATH" -m pip install numpy --no-binary :all:
+"$CONDA_PYTHON_PATH" -m pip install numpy==1.11.0 --no-binary :all:
+"$CONDA_PYTHON_PATH" -m pip install fenics --no-binary :all:
+"$CONDA_PYTHON_PATH" -m pip install fenics==1.6.0 --no-binary :all:
+"$CONDA_PYTHON_PATH" -m pip install ufl --no-binary :all:
+"$CONDA_PYTHON_PATH" -m pip install ufl==1.6.0  --no-binary :all:
+"$CONDA_PYTHON_PATH" -m pip install six --no-binary :all:
+"$CONDA_PYTHON_PATH" -m pip install six==1.6.0 --no-binary :all:
+"$CONDA_PYTHON_PATH" -m pip install ffc --no-binary :all:
+"$CONDA_PYTHON_PATH" -m pip install ffc==1.6.0 --no-binary :all:
+"$CONDA_PYTHON_PATH" -m pip install sympy --no-binary :all:
+"$CONDA_PYTHON_PATH" -m pip install sympy==1.5.1 --no-binary :all:
+"$CONDA_PYTHON_PATH" -m pip install ply.lex --no-binary :all:
+"$CONDA_PYTHON_PATH" -m pip install ply.lex==1.5.1 --no-binary :all:
+
+
+
+python -c "import sys; print(sys.path)"
+python -c "import dolfin; print(dolfin.__version__)"
+python -c "import dolfin; print(dolfin.__path__)"
+
+python -c "import numpy; print(numpy.__version__)"
+python -c "import ufl; print(ufl.__version__)"
+python -c "import six; print(six.__version__)"
+python -c "import ffc; print(ffc.__version__)"
+python -c "import sympy; print(sympy.__version__)"
+
+python -c "import sys; print('\n'.join(sys.path))"
+
+/home/fenics/build/lib/python2.7/site-packages
+/usr/lib/python2.7/dist-packages
+/usr/lib/python2.7
+/usr/lib/python2.7/plat-x86_64-linux-gnu
+/usr/lib/python2.7/lib-tk
+/usr/lib/python2.7/lib-old
+/usr/lib/python2.7/lib-dynload
+/usr/local/lib/python2.7/dist-packages
+/usr/lib/python2.7/dist-packages/PILcompat
+/usr/lib/python2.7/dist-packages/gtk-2.0
+
+export PYTHONPATH=/home/fenics/build/lib/python2.7/site-packages:/usr/lib/python2.7/dist-packages:/usr/lib/python2.7:/usr/lib/python2.7/plat-x86_64-linux-gnu:/usr/lib/python2.7/lib-tk:/usr/lib/python2.7/lib-old:/usr/lib/python2.7/lib-dynload:/usr/local/lib/python2.7/dist-packages:/usr/lib/python2.7/dist-packages/PILcompat:/usr/lib/python2.7/dist-packages/gtk-2.0
+
+
+
+conda deactivate
+
+
+python -c "import sys; print(sys.path)"
+python -c "import numpy; print(numpy.__version__)"
+python -c "import ufl; print(ufl.__version__)"
+python -c "import six; print(six.__version__)"
+python -c "import ffc; print(ffc.__version__)"
+python -c "import sympy; print(sympy.__version__)"
+python -c "import dolfin; print(dolfin.__version__)"
