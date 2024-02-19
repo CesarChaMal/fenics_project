@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PROJECT_PATH="/c/IdeaProjects/fenics_project"
+PROJECT_PATH=$(pwd)
 cd "$PROJECT_PATH"
 
 # Pull Docker image
