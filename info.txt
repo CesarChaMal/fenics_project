@@ -337,13 +337,14 @@ conda install --name fenics1.6 pip --force-reinstall
 "$CONDA_PYTHON_PATH" -m pip install ffc==1.6.0 --no-binary :all:
 "$CONDA_PYTHON_PATH" -m pip install sympy --no-binary :all:
 "$CONDA_PYTHON_PATH" -m pip install sympy==1.5.1 --no-binary :all:
-"$CONDA_PYTHON_PATH" -m pip install ply.lex --no-binary :all:
-"$CONDA_PYTHON_PATH" -m pip install ply.lex==1.5.1 --no-binary :all:
+"$CONDA_PYTHON_PATH" -m pip install ply --no-binary :all:
+"$CONDA_PYTHON_PATH" -m pip install ply==1.5.1 --no-binary :all:
 
 
 
 python -c "import sys; print(sys.path)"
 python -c "import dolfin; print(dolfin.__version__)"
+python -c "import dolfin; print(dolfin.__path__)"
 python -c "import dolfin; print(dolfin.__path__)"
 
 python -c "import numpy; print(numpy.__version__)"
@@ -361,9 +362,9 @@ python -c "import sys; print('\n'.join(sys.path))"
 /usr/lib/python2.7/lib-tk
 /usr/lib/python2.7/lib-old
 /usr/lib/python2.7/lib-dynload
-/usr/local/lib/python2.7/dist-packages
 /usr/lib/python2.7/dist-packages/PILcompat
 /usr/lib/python2.7/dist-packages/gtk-2.0
+/usr/local/lib/python2.7/dist-packages
 
 export PYTHONPATH=/home/fenics/build/lib/python2.7/site-packages:/usr/lib/python2.7/dist-packages:/usr/lib/python2.7:/usr/lib/python2.7/plat-x86_64-linux-gnu:/usr/lib/python2.7/lib-tk:/usr/lib/python2.7/lib-old:/usr/lib/python2.7/lib-dynload:/usr/local/lib/python2.7/dist-packages:/usr/lib/python2.7/dist-packages/PILcompat:/usr/lib/python2.7/dist-packages/gtk-2.0
 
